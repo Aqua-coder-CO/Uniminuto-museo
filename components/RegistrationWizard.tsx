@@ -1,6 +1,6 @@
 "use client";
 
-import { cloneElement, isValidElement, useState, type ReactElement, type ReactNode } from "react";
+import { cloneElement, isValidElement, useEffect, useRef, useState, type ReactElement, type ReactNode } from "react";
 import Image from "next/image";
 import { MuseumChrome, PrimaryButton, QuietButton } from "@/components/MuseumChrome";
 import {
@@ -17,6 +17,12 @@ import {
 } from "@/lib/registration";
 
 const DETAIL_FIELDS = ["fullName", "age", "culturalInterests", "phone", "occupation", "consent"] as const;
+const FIELD_ORDER = [...DETAIL_FIELDS, "activity"] as const;
+
+function scrollToField(field: string) {
+  const target = document.getElementById(`${field}-field`) ?? document.getElementById(field);
+  target?.scrollIntoView({ behavior: "smooth", block: "center" });
+}
 
 export function RegistrationWizard() {
   const [step, setStep] = useState(0);
@@ -24,6 +30,20 @@ export function RegistrationWizard() {
   const [errors, setErrors] = useState<FieldErrors>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const pendingField = useRef<string | null>(null);
+  const [scrollRequest, setScrollRequest] = useState(0);
+
+  function queueScroll(nextErrors: FieldErrors) {
+    pendingField.current = FIELD_ORDER.find((field) => nextErrors[field]) ?? null;
+    if (pendingField.current) setScrollRequest((current) => current + 1);
+  }
+
+  useEffect(() => {
+    const field = pendingField.current;
+    if (!field) return;
+    pendingField.current = null;
+    scrollToField(field);
+  }, [scrollRequest]);
 
   function update<K extends keyof RegistrationDraft>(key: K, value: RegistrationDraft[K]) {
     setDraft((current) => ({ ...current, [key]: value }));
@@ -37,6 +57,7 @@ export function RegistrationWizard() {
     );
     if (Object.keys(visible).length > 0) {
       setErrors(visible);
+      queueScroll(visible);
       return;
     }
     setErrors({});
@@ -45,7 +66,9 @@ export function RegistrationWizard() {
 
   function goToReview() {
     if (!draft.activity) {
-      setErrors({ activity: "Elige una actividad. Solo puedes escoger una." });
+      const nextErrors = { activity: "Elige una actividad. Solo puedes escoger una." };
+      setErrors(nextErrors);
+      queueScroll(nextErrors);
       return;
     }
     setErrors({});
@@ -57,6 +80,7 @@ export function RegistrationWizard() {
     const nextErrors = validateDraft(draft);
     if (!payload) {
       setErrors(nextErrors);
+      queueScroll(nextErrors);
       if (DETAIL_FIELDS.some((field) => nextErrors[field])) setStep(1);
       else if (nextErrors.activity) setStep(2);
       return;
@@ -73,7 +97,11 @@ export function RegistrationWizard() {
       if (!response.ok) {
         const body: unknown = await response.json().catch(() => null);
         if (body && typeof body === "object" && "errors" in body) {
-          setErrors(body.errors as FieldErrors);
+          const apiErrors = body.errors as FieldErrors;
+          setErrors(apiErrors);
+          queueScroll(apiErrors);
+          if (DETAIL_FIELDS.some((field) => apiErrors[field])) setStep(1);
+          else if (apiErrors.activity) setStep(2);
         }
         setSubmitError("No pudimos guardar la inscripción. Revisa los datos e inténtalo de nuevo.");
         return;
@@ -252,7 +280,7 @@ function Details({
             ))}
           </select>
         </Field>
-        <div>
+        <div id="consent-field" className="scroll-mt-6">
           <label className="flex items-start gap-3 text-ink" htmlFor="consent">
             <input
               id="consent"
@@ -332,7 +360,9 @@ function Activities({
           );
         })}
       </div>
-      {errors.activity ? <p className="mt-4 text-sm text-clay-deep">{errors.activity}</p> : null}
+      <div id="activity-field" className="scroll-mt-6">
+        {errors.activity ? <p className="mt-4 text-sm text-clay-deep">{errors.activity}</p> : null}
+      </div>
     </div>
   );
 }
@@ -424,7 +454,7 @@ function Field({
     : children;
 
   return (
-    <div>
+    <div id={`${htmlFor}-field`} className="scroll-mt-6">
       <label htmlFor={htmlFor} className="block text-base font-medium text-ink">
         {label}
       </label>
