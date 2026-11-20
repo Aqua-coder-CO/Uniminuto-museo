@@ -25,25 +25,20 @@ export function MuseumChrome({
       </header>
       <main className="py-8 sm:py-10">{children}</main>
       {actions ? <div className="pb-10">{actions}</div> : null}
-      <footer className="mt-auto flex flex-col gap-3 border-t border-line pt-5 text-sm text-ink/75 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p>Carrera 74 No. 82A-81, Bogotá</p>
-          <p>
-            <a className="underline decoration-line underline-offset-4 hover:text-ink" href="tel:2916520">
-              291 6520 ext. 6160
-            </a>
-            {" · "}
-            <a
-              className="underline decoration-line underline-offset-4 hover:text-ink"
-              href="mailto:mac.bogota@uniminuto.edu"
-            >
-              mac.bogota@uniminuto.edu
-            </a>
-          </p>
-        </div>
-        <Link href="/admin" className="text-moss underline decoration-line underline-offset-4 hover:text-ink">
-          Acceso del equipo
-        </Link>
+      <footer className="mt-auto border-t border-line pt-5 text-sm text-ink/75">
+        <p>Carrera 74 No. 82A-81, Bogotá</p>
+        <p>
+          <a className="underline decoration-line underline-offset-4 hover:text-ink" href="tel:2916520">
+            291 6520 ext. 6160
+          </a>
+          {" · "}
+          <a
+            className="underline decoration-line underline-offset-4 hover:text-ink"
+            href="mailto:mac.bogota@uniminuto.edu"
+          >
+            mac.bogota@uniminuto.edu
+          </a>
+        </p>
       </footer>
     </div>
   );
