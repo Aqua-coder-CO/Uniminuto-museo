@@ -1,7 +1,7 @@
 "use client";
 
 import { cloneElement, isValidElement, useState, type ReactElement, type ReactNode } from "react";
-import { MarkArt, SensoryArt, WelcomeArt } from "@/components/GalleryArt";
+import Image from "next/image";
 import { MuseumChrome, PrimaryButton, QuietButton } from "@/components/MuseumChrome";
 import {
   ACTIVITIES,
@@ -147,7 +147,15 @@ function Welcome() {
         </p>
       </div>
       <div className="mx-auto w-full max-w-sm">
-        <WelcomeArt />
+        <Image
+          src="/mac-fachada.jpg"
+          alt="Fachada del Museo de Arte Contemporáneo de UNIMINUTO"
+          width={575}
+          height={1024}
+          priority
+          sizes="(min-width: 1024px) 24rem, 100vw"
+          className="h-auto w-full rounded-[28px]"
+        />
       </div>
     </div>
   );
@@ -295,8 +303,22 @@ function Activities({
                 checked={selected}
                 onChange={() => update("activity", activity.value)}
               />
-              <div className="h-36">
-                {activity.value === "sensorial" ? <SensoryArt /> : <MarkArt />}
+              <div className="relative h-56 sm:h-64">
+                <Image
+                  src={activity.value === "sensorial" ? "/obra-sensorial.png" : "/deja-tu-huella.jpg"}
+                  alt={
+                    activity.value === "sensorial"
+                      ? "Participante con los ojos cubiertos junto a una obra de plastilina"
+                      : "Personaje dejando una marca en un muro"
+                  }
+                  fill
+                  sizes="(min-width: 1024px) 36rem, 100vw"
+                  className={
+                    activity.value === "sensorial"
+                      ? "object-cover object-[center_58%]"
+                      : "object-cover object-[center_28%]"
+                  }
+                />
               </div>
               <div className="p-5 sm:p-6">
                 <p className="text-xs font-medium tracking-[0.16em] text-moss uppercase">
